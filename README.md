@@ -1,1 +1,1 @@
-# Telegram-bot-ISintegration
+# Telegram-бота для интеграции с информационными системами
