@@ -11,6 +11,16 @@ from email_validator import EmailNotValidError, validate_email
 
 router = Router()
 
+# #TEST WITHOUT BACKEND
+# from menu import main_sections_keyboard
+#
+# @router.message(CommandStart())
+# async def cmd_start(message: Message, state: FSMContext):
+#     await message.answer(
+#         "Выберите раздел:",
+#         reply_markup=main_sections_keyboard()
+#     )
+
 class AuthStates(StatesGroup):
     waiting_for_email = State()
 
@@ -36,6 +46,7 @@ async def cmd_start(message: Message, state: FSMContext):
     await message.answer(
         "Для входа в бот введите ваш email"
     )
+
 
 #обработка ввода email
 @router.message(StateFilter(AuthStates.waiting_for_email))
