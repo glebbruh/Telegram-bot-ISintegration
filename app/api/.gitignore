@@ -1,0 +1,27 @@
+# venv
+.venv/
+venv/
+
+# python
+__pycache__/
+*.py[cod]
+
+# env
+.env
+.env.*
+
+# ide
+.idea/
+.vscode/
+
+# macOS
+.DS_Store
+
+# tests / cache
+.pytest_cache/
+.mypy_cache/
+.coverage
+
+# local db files
+*.sqlite3
+*.db
