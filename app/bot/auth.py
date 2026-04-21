@@ -11,7 +11,7 @@ from email_validator import EmailNotValidError, validate_email
 
 router = Router()
 
-# #TEST WITHOUT BACKEND
+#TEST WITHOUT BACKEND
 # from menu import main_sections_keyboard
 #
 # @router.message(CommandStart())
