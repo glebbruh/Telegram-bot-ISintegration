@@ -17,8 +17,8 @@ class StatusChoiceCb(CallbackData, prefix="status"):
 class OverdueChoiceCb(CallbackData, prefix="overdue"):
     value: str
 
-class TemplateChoiceCb(CallbackData, prefix="template"):
-    template_id: int
+class PatternChoiceCb(CallbackData, prefix="pattern"):
+    pattern_id: int
 
 class TasksMenuCb(CallbackData, prefix="tasks_menu"):
     action: str
@@ -38,42 +38,42 @@ def main_sections_keyboard() -> ReplyKeyboardMarkup:
 
 def checks_filters_keyboard(filters: dict | None = None) -> InlineKeyboardMarkup:
     filters = filters or {}
-    start_text = "Приступить"
-    if filters.get("start_period"):
-        start_text += f" ✅ {filters['start_period']['label']}"
+    start_text = "Приступить к выполнению"
+    if filters.get("date_at"):
+        start_text += f" ✅ {filters['date_at']['label']}"
     finish_text = "Период даты завершения"
-    if filters.get("finish_period"):
-        finish_text += f" ✅ {filters['finish_period']['label']}"
+    if filters.get("finished_at"):
+        finish_text += f" ✅ {filters['finished_at']['label']}"
     deadline_text = "Период крайнего срока"
-    if filters.get("deadline_period"):
-        deadline_text += f" ✅ {filters['deadline_period']['label']}"
+    if filters.get("deadline_at"):
+        deadline_text += f" ✅ {filters['deadline_at']['label']}"
     status_text = "Статус"
     if filters.get("status"):
         status_text += f" ✅ {filters['status']['label']}"
     overdue_text = "Просрочено"
     if filters.get("overdue"):
         overdue_text += f" ✅ {filters['overdue']['label']}"
-    template_text = "Шаблоны чек-листов"
-    if filters.get("template"):
-        template_text += f" ✅ {filters['template']['name']}"
+    pattern_text = "Шаблоны чек-листов"
+    if filters.get("pattern"):
+        pattern_text += f" ✅ {filters['pattern']['name']}"
     return InlineKeyboardMarkup(
         inline_keyboard=[
             [
                 InlineKeyboardButton(
                     text=start_text,
-                    callback_data=ChecksMenuCb(action="start_period").pack()
+                    callback_data=ChecksMenuCb(action="date_at").pack()
                 )
             ],
             [
                 InlineKeyboardButton(
                     text=finish_text,
-                    callback_data=ChecksMenuCb(action="finish_period").pack()
+                    callback_data=ChecksMenuCb(action="finished_at").pack()
                 )
             ],
             [
                 InlineKeyboardButton(
                     text=deadline_text,
-                    callback_data=ChecksMenuCb(action="deadline_period").pack()
+                    callback_data=ChecksMenuCb(action="deadline_at").pack()
                 )
             ],
             [
@@ -90,8 +90,8 @@ def checks_filters_keyboard(filters: dict | None = None) -> InlineKeyboardMarkup
             ],
             [
                 InlineKeyboardButton(
-                    text=template_text,
-                    callback_data=ChecksMenuCb(action="template").pack()
+                    text=pattern_text,
+                    callback_data=ChecksMenuCb(action="pattern").pack()
                 )
             ],
             [
@@ -114,22 +114,22 @@ def status_keyboard() -> InlineKeyboardMarkup:
         inline_keyboard=[
             [
                 InlineKeyboardButton(
-                    text="Новая",
-                    callback_data=StatusChoiceCb(value="new").pack()
+                    text="Назначено",
+                    callback_data=StatusChoiceCb(value="created").pack()
                 ),
                 InlineKeyboardButton(
                     text="В работе",
-                    callback_data=StatusChoiceCb(value="in_progress").pack()
+                    callback_data=StatusChoiceCb(value="process").pack()
                 ),
             ],
             [
                 InlineKeyboardButton(
-                    text="Завершена",
-                    callback_data=StatusChoiceCb(value="done").pack()
+                    text="Завершено",
+                    callback_data=StatusChoiceCb(value="completed").pack()
                 ),
                 InlineKeyboardButton(
-                    text="Отменена",
-                    callback_data=StatusChoiceCb(value="cancelled").pack()
+                    text="Валидация",
+                    callback_data=StatusChoiceCb(value="verification").pack()
                 ),
             ],
             [
@@ -172,12 +172,12 @@ def overdue_keyboard() -> InlineKeyboardMarkup:
         ]
     )
 
-def templates_results_keyboard(results: list[dict]) -> InlineKeyboardMarkup:
+def patterns_results_keyboard(results: list[dict]) -> InlineKeyboardMarkup:
     builder = InlineKeyboardBuilder()
     for item in results:
         builder.button(
             text=item["name"],
-            callback_data=TemplateChoiceCb(template_id=item["id"]).pack()
+            callback_data=PatternChoiceCb(pattern_id=item["id"]).pack()
         )
     builder.adjust(1)
     builder.row(
@@ -258,7 +258,7 @@ def task_priority_keyboard() -> InlineKeyboardMarkup:
                     callback_data=TasksMenuCb(action="back").pack()
                 ),
                 InlineKeyboardButton(
-                    text="Сбросить фильтр",
+                    text="Сбросить фильтры",
                     callback_data=TaskPriorityChoiceCb(value="clear").pack()
                 )
             ]

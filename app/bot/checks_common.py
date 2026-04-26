@@ -3,9 +3,9 @@ from aiogram.fsm.context import FSMContext
 FILTERS_KEY = "checks_filters"
 
 FIELD_LABELS = {
-    "start_period": "Приступить",
-    "finish_period": "Период даты завершения",
-    "deadline_period": "Период крайнего срока",
+    "date_at": "Приступить к выполнению",
+    "finished_at": "Период даты завершения (фактического)",
+    "deadline_at": "Период крайнего срока",
 }
 
 async def get_filters(state: FSMContext) -> dict:
@@ -26,11 +26,11 @@ def build_filters_text(filters: dict) -> str:
     lines = [
         "Выберите фильтры для раздела «Проверки».",
         "",
-        f"• Приступить: {filters.get('start_period', {}).get('label', 'не выбрано')}",
-        f"• Период даты завершения: {filters.get('finish_period', {}).get('label', 'не выбрано')}",
-        f"• Период крайнего срока: {filters.get('deadline_period', {}).get('label', 'не выбрано')}",
-        f"• Статус: {filters.get('status', {}).get('label', 'не выбрано')}",
-        f"• Просрочено: {filters.get('overdue', {}).get('label', 'не выбрано')}",
-        f"• Шаблон чек-листа: {filters.get('template', {}).get('name', 'не выбрано')}",
+        f"- Приступить к выполнению: {filters.get('date_at', {}).get('label', 'не выбрано')}",
+        f"- Период даты завершения (фактического): {filters.get('finished_at', {}).get('label', 'не выбрано')}",
+        f"- Период крайнего срока: {filters.get('deadline_at', {}).get('label', 'не выбрано')}",
+        f"- Статус: {filters.get('status', {}).get('label', 'не выбрано')}",
+        f"- Просрочено: {filters.get('overdue', {}).get('label', 'не выбрано')}",
+        f"- Шаблон чек-листа: {filters.get('pattern', {}).get('name', 'не выбрано')}",
     ]
     return "\n".join(lines)

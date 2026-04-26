@@ -13,7 +13,7 @@ async def main():
     token = os.getenv("BOT_TOKEN", "").strip()
     if not token:
         raise RuntimeError(
-            "BOT_TOKEN is not exist"
+            "BOT_TOKEN does not exist"
         )
     bot = Bot(token=token)
     dp = Dispatcher()

@@ -1,3 +1,5 @@
+import os
+import httpx
 from aiogram import F, Router
 from aiogram.filters import StateFilter
 from aiogram.fsm.context import FSMContext
@@ -8,7 +10,7 @@ from menu import (
     ChecksMenuCb,
     OverdueChoiceCb,
     StatusChoiceCb,
-    TemplateChoiceCb,
+    PatternChoiceCb,
     TasksMenuCb,
     TaskPriorityChoiceCb,
     checks_filters_keyboard,
@@ -16,7 +18,7 @@ from menu import (
     status_keyboard,
     task_priority_keyboard,
     tasks_filters_keyboard,
-    templates_results_keyboard,
+    patterns_results_keyboard,
 )
 from tasks_common import (
     build_tasks_filters_text,
@@ -25,35 +27,30 @@ from tasks_common import (
     remove_task_filter,
     save_task_filter,
 )
+from connect_with_backend import(
+    fetch_patterns_from_backend,
+    send_checks_filters_to_backend,
+    send_tasks_filters_to_backend,
+)
+from result_formatters import (
+    build_checks_status_legend,
+    format_checks_response,
+    format_tasks_response,
+)
 from bot_calendar import open_range_calendar
 from checks_common import build_filters_text, get_filters, remove_filter, save_filter
 
 router = Router()
 
-class TemplateSearchStates(StatesGroup):
-    waiting_template_query = State()
+class PatternSearchStates(StatesGroup):
+    waiting_pattern_query = State()
 
-# Временный список шаблонов чек-листов.
-# Потом можно заменить на данные с бекэнда.
-CHECKLIST_TEMPLATES = [
-    {"id": 1, "name": "пупи"},
-    {"id": 2, "name": "вупи"},
-    {"id": 3, "name": "пупи"},
-    {"id": 4, "name": "пупи"},
-    {"id": 5, "name": "пупи"},
-    {"id": 6, "name": "пупи"},
-    {"id": 7, "name": "пупи"},
-    {"id": 8, "name": "пупи"},
-    {"id": 9, "name": "пупи"},
-    {"id": 10, "name": "пупи"},
-    {"id": 11, "name": "пупи"}
-]
 
 STATUS_LABELS = {
-    "new": "Новая",
-    "in_progress": "В работе",
-    "done": "Завершена",
-    "cancelled": "Отменена",
+    "created": "Назначено",
+    "process": "В работе",
+    "completed": "Завершено",
+    "verification": "Валидация",
 }
 
 TASK_PRIORITY_LABELS = {
@@ -63,11 +60,14 @@ TASK_PRIORITY_LABELS = {
     "high": "Высокий",
 }
 
+async def get_current_user_id(state: FSMContext) -> int | None:
+    data = await state.get_data()
+    return data.get("user_id")
+
 async def send_new_filters_message(chat_id: int, bot, state: FSMContext):
     filters = await get_filters(state)
     text = build_filters_text(filters)
     markup = checks_filters_keyboard(filters)
-
     await bot.send_message(
         chat_id=chat_id,
         text=text,
@@ -111,9 +111,8 @@ async def back_to_tasks_filters(callback: CallbackQuery, state: FSMContext):
     await callback.answer()
     await show_tasks_filters_message(callback, state)
 
-
 @router.callback_query(
-    ChecksMenuCb.filter(F.action.in_({"start_period", "finish_period", "deadline_period"}))
+    ChecksMenuCb.filter(F.action.in_({"date_at", "finished_at", "deadline_at"}))
 )
 async def open_period_submenu(
     callback: CallbackQuery,
@@ -175,13 +174,11 @@ async def process_status_choice(
     state: FSMContext,
 ):
     value = callback_data.value
-
     if value == "clear":
         await remove_filter(state, "status")
         await callback.answer("Статус сброшен")
         await show_filters_message(callback, state)
         return
-
     await save_filter(
         state,
         "status",
@@ -193,7 +190,6 @@ async def process_status_choice(
     await callback.answer("Статус сохранён")
     await show_filters_message(callback, state)
 
-
 @router.callback_query(ChecksMenuCb.filter(F.action == "overdue"))
 async def open_overdue_submenu(callback: CallbackQuery):
     await callback.answer()
@@ -202,7 +198,6 @@ async def open_overdue_submenu(callback: CallbackQuery):
         reply_markup=overdue_keyboard()
     )
 
-
 @router.callback_query(OverdueChoiceCb.filter())
 async def process_overdue_choice(
     callback: CallbackQuery,
@@ -210,15 +205,12 @@ async def process_overdue_choice(
     state: FSMContext,
 ):
     value = callback_data.value
-
     if value == "clear":
         await remove_filter(state, "overdue")
         await callback.answer("Фильтр сброшен")
         await show_filters_message(callback, state)
         return
-
     label = "Да" if value == "yes" else "Нет"
-
     await save_filter(
         state,
         "overdue",
@@ -230,38 +222,45 @@ async def process_overdue_choice(
     await callback.answer("Значение сохранено")
     await show_filters_message(callback, state)
 
-
-@router.callback_query(ChecksMenuCb.filter(F.action == "template"))
-async def open_template_search(callback: CallbackQuery, state: FSMContext):
-    await state.set_state(TemplateSearchStates.waiting_template_query)
+@router.callback_query(ChecksMenuCb.filter(F.action == "pattern"))
+async def open_pattern_search(callback: CallbackQuery, state: FSMContext):
+    user_id = await get_current_user_id(state)
+    if user_id is None:
+        await callback.answer("Не найден user_id. Войдите в систему заново.", show_alert=True)
+        return
+    try:
+        patterns = await fetch_patterns_from_backend(user_id)
+    except Exception as e:
+        await callback.answer(f"Не удалось получить шаблоны: {e}", show_alert=True)
+        return
+    await state.update_data(available_patterns=patterns)
+    await state.set_state(PatternSearchStates.waiting_pattern_query)
     try:
         await callback.message.delete()
     except Exception:
         pass
     prompt = await callback.message.bot.send_message(
         chat_id=callback.message.chat.id,
-        text=(
-            "Введите часть названия шаблона чек-листа.\n"
-            "Например: пупи, вупи"
-        )
+        text="Введите часть названия шаблона чек-листа."
     )
     await state.update_data(
-        template_prompt_message_id=prompt.message_id
+        pattern_prompt_message_id=prompt.message_id
     )
     await callback.answer()
 
-@router.message(StateFilter(TemplateSearchStates.waiting_template_query))
-async def process_template_search(message: Message, state: FSMContext):
+@router.message(StateFilter(PatternSearchStates.waiting_pattern_query))
+async def process_pattern_search(message: Message, state: FSMContext):
     query = (message.text or "").strip().lower()
     if not query:
         await message.answer("Введите хотя бы один символ для поиска.")
         return
+    data = await state.get_data()
+    available_patterns = data.get("available_patterns", [])
     results = [
-        item for item in CHECKLIST_TEMPLATES
+        item for item in available_patterns
         if query in item["name"].lower()
     ][:10]
-    data = await state.get_data()
-    prompt_message_id = data.get("template_prompt_message_id")
+    prompt_message_id = data.get("pattern_prompt_message_id")
     if prompt_message_id:
         try:
             await message.bot.delete_message(
@@ -279,37 +278,39 @@ async def process_template_search(message: Message, state: FSMContext):
             chat_id=message.chat.id,
             text="Ничего не найдено. Введите другой запрос."
         )
-        await state.update_data(template_prompt_message_id=msg.message_id)
+        await state.update_data(pattern_prompt_message_id=msg.message_id)
         return
     results_message = await message.bot.send_message(
         chat_id=message.chat.id,
         text="Найдены шаблоны. Выберите один из списка:",
-        reply_markup=templates_results_keyboard(results)
+        reply_markup=patterns_results_keyboard(results)
     )
     await state.update_data(
-        template_results_message_id=results_message.message_id
+        pattern_results_message_id=results_message.message_id
     )
 
-@router.callback_query(TemplateChoiceCb.filter())
-async def process_template_choice(
+@router.callback_query(PatternChoiceCb.filter())
+async def process_pattern_choice(
     callback: CallbackQuery,
-    callback_data: TemplateChoiceCb,
+    callback_data: PatternChoiceCb,
     state: FSMContext,
 ):
-    template_id = callback_data.template_id
-    template = next(
-        (item for item in CHECKLIST_TEMPLATES if item["id"] == template_id),
+    pattern_id = callback_data.pattern_id
+    data = await state.get_data()
+    available_patterns = data.get("available_patterns", [])
+    pattern = next(
+        (item for item in available_patterns if item["id"] == pattern_id),
         None
     )
-    if not template:
+    if not pattern:
         await callback.answer("Шаблон не найден", show_alert=True)
         return
     await save_filter(
         state,
-        "template",
+        "pattern",
         {
-            "id": template["id"],
-            "name": template["name"],
+            "id": pattern["id"],
+            "name": pattern["name"],
         }
     )
     try:
@@ -326,8 +327,13 @@ async def process_template_choice(
 
 @router.callback_query(ChecksMenuCb.filter(F.action == "clear_all"))
 async def clear_all_filters(callback: CallbackQuery, state: FSMContext):
-    await state.update_data(checks_filters={})
-    await state.update_data(calendar_context=None)
+    await state.update_data(
+        checks_filters={},
+        calendar_context=None,
+        available_patterns=[],
+        pattern_prompt_message_id=None,
+        pattern_results_message_id=None,
+    )
     await callback.answer("Все фильтры сброшены")
     await show_filters_message(callback, state)
 
@@ -340,23 +346,37 @@ async def clear_all_task_filters_handler(callback: CallbackQuery, state: FSMCont
 @router.callback_query(ChecksMenuCb.filter(F.action == "apply"))
 async def apply_filters(callback: CallbackQuery, state: FSMContext):
     filters = await get_filters(state)
-    payload = {
-        "section": "checks",
-        "filters": filters,
-    }
-    #Потом сюда можно будет добавить отправку payload на бекэнд.
-    #Сейчас только заглушка.
-    print(payload)
-    await callback.answer()
-    await callback.message.answer("Спасибо, что оставили сообщение!")
+    user_id = await get_current_user_id(state)
+    try:
+        response_data = await send_checks_filters_to_backend(
+            user_id=user_id,
+            filters=filters
+        )
+    except Exception as e:
+        await callback.answer()
+        await callback.message.answer(
+            f"Не удалось отправить фильтры на бекэнд: {e}"
+        )
+        return
+    print(response_data)
+    await callback.answer(build_checks_status_legend())
+    await callback.message.answer(format_checks_response(response_data))
 
 @router.callback_query(TasksMenuCb.filter(F.action == "apply"))
 async def apply_task_filters(callback: CallbackQuery, state: FSMContext):
     filters = await get_task_filters(state)
-    payload = {
-        "section": "tasks",
-        "filters": filters,
-    }
-    print(payload)
+    user_id = await get_current_user_id(state)
+    try:
+        response_data = await send_tasks_filters_to_backend(
+            user_id=user_id,
+            filters=filters
+        )
+    except Exception as e:
+        await callback.answer()
+        await callback.message.answer(
+            f"Не удалось отправить фильтры задач на бекэнд: {e}"
+        )
+        return
+    print(response_data)
     await callback.answer()
-    await callback.message.answer("Спасибо, что оставили сообщение!")
+    await callback.message.answer(format_tasks_response(response_data))
