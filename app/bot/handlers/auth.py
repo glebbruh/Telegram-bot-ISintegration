@@ -15,7 +15,7 @@ class AuthStates(StatesGroup):
     waiting_for_email = State()
 
 #TEST WITHOUT BACKEND
-from menu import main_sections_keyboard
+from bot.keyboards.menu import main_sections_keyboard
 
 @router.message(CommandStart())
 async def cmd_start(message: Message, state: FSMContext):

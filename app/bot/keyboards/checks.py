@@ -1,40 +1,12 @@
-#меню бота
-from aiogram.filters.callback_data import CallbackData
-from aiogram.types import (
-    InlineKeyboardButton,
-    InlineKeyboardMarkup,
-    KeyboardButton,
-    ReplyKeyboardMarkup,
-)
+from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 
-class ChecksMenuCb(CallbackData, prefix="checks_menu"):
-    action: str
-
-class StatusChoiceCb(CallbackData, prefix="status"):
-    value: str
-
-class OverdueChoiceCb(CallbackData, prefix="overdue"):
-    value: str
-
-class PatternChoiceCb(CallbackData, prefix="pattern"):
-    pattern_id: int
-
-class TasksMenuCb(CallbackData, prefix="tasks_menu"):
-    action: str
-
-class TaskPriorityChoiceCb(CallbackData, prefix="task_priority"):
-    value: str
-
-def main_sections_keyboard() -> ReplyKeyboardMarkup:
-    return ReplyKeyboardMarkup(
-        keyboard=[
-            [KeyboardButton(text="Проверки"), KeyboardButton(text="Задачи")]
-        ],
-        resize_keyboard=True,
-        input_field_placeholder="Выберите раздел"
-    )
-
+from bot.keyboards.callbacks import (
+    ChecksMenuCb,
+    OverdueChoiceCb,
+    PatternChoiceCb,
+    StatusChoiceCb,
+)
 
 def checks_filters_keyboard(filters: dict | None = None) -> InlineKeyboardMarkup:
     filters = filters or {}
@@ -56,6 +28,12 @@ def checks_filters_keyboard(filters: dict | None = None) -> InlineKeyboardMarkup
     pattern_text = "Шаблоны чек-листов"
     if filters.get("pattern"):
         pattern_text += f" ✅ {filters['pattern']['name']}"
+    show_my_text = "Показывать только мои задачи"
+    if filters.get("show_my", {}).get("value") is True:
+        show_my_text += "✅"
+    made_by_me_text = "Показывать назначенные мной"
+    if filters.get("made_by_me", {}).get("value") is True:
+        made_by_me_text += "✅"
     return InlineKeyboardMarkup(
         inline_keyboard=[
             [
@@ -96,7 +74,25 @@ def checks_filters_keyboard(filters: dict | None = None) -> InlineKeyboardMarkup
             ],
             [
                 InlineKeyboardButton(
-                    text="Сбросить все фильтр",
+                    text=show_my_text,
+                    callback_data=ChecksMenuCb(action="toggle_show_my").pack()
+                )
+            ],
+            [
+                InlineKeyboardButton(
+                    text=made_by_me_text,
+                    callback_data=ChecksMenuCb(action="toggle_made_by_me").pack()
+                )
+            ],
+            [
+              InlineKeyboardButton(
+                  text="Сводка на сегодня",
+                  callback_data=ChecksMenuCb(action="today_summary").pack()
+              )
+            ],
+            [
+                InlineKeyboardButton(
+                    text="Сбросить все фильтры",
                     callback_data=ChecksMenuCb(action="clear_all").pack()
                 )
             ],
@@ -187,80 +183,3 @@ def patterns_results_keyboard(results: list[dict]) -> InlineKeyboardMarkup:
         )
     )
     return builder.as_markup()
-
-def tasks_filters_keyboard(filters: dict | None = None) -> InlineKeyboardMarkup:
-    filters = filters or {}
-    deadline_text = "Сроки"
-    if filters.get("deadline_period"):
-        deadline_text += f" ✅ {filters['deadline_period']['label']}"
-    priority_text = "Приоритет"
-    if filters.get("priority"):
-        priority_text += f" ✅ {filters['priority']['label']}"
-    return InlineKeyboardMarkup(
-        inline_keyboard=[
-            [
-                InlineKeyboardButton(
-                    text=deadline_text,
-                    callback_data=TasksMenuCb(action="deadline_period").pack()
-                )
-            ],
-            [
-                InlineKeyboardButton(
-                    text=priority_text,
-                    callback_data=TasksMenuCb(action="priority").pack()
-                )
-            ],
-            [
-                InlineKeyboardButton(
-                    text="Сбросить все фильтры",
-                    callback_data=TasksMenuCb(action="clear_all").pack()
-                )
-            ],
-            [
-                InlineKeyboardButton(
-                    text="Получить данные",
-                    callback_data=TasksMenuCb(action="apply").pack()
-                )
-            ],
-        ]
-    )
-
-def task_priority_keyboard() -> InlineKeyboardMarkup:
-    return InlineKeyboardMarkup(
-        inline_keyboard=[
-            [
-                InlineKeyboardButton(
-                    text="Без приоритета",
-                    callback_data=TaskPriorityChoiceCb(value="none").pack()
-                )
-            ],
-            [
-                InlineKeyboardButton(
-                    text="Низкий",
-                    callback_data=TaskPriorityChoiceCb(value="low").pack()
-                )
-            ],
-            [
-                InlineKeyboardButton(
-                    text="Средний",
-                    callback_data=TaskPriorityChoiceCb(value="medium").pack()
-                )
-            ],
-            [
-                InlineKeyboardButton(
-                    text="Высокий",
-                    callback_data=TaskPriorityChoiceCb(value="high").pack()
-                )
-            ],
-            [
-                InlineKeyboardButton(
-                    text="Назад",
-                    callback_data=TasksMenuCb(action="back").pack()
-                ),
-                InlineKeyboardButton(
-                    text="Сбросить фильтры",
-                    callback_data=TaskPriorityChoiceCb(value="clear").pack()
-                )
-            ]
-        ]
-    )

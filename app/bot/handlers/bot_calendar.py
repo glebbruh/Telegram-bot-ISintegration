@@ -6,21 +6,22 @@ from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery, InlineKeyboardButton, Message
 from aiogram_calendar import SimpleCalendar, SimpleCalendarCallback
 
-from menu import checks_filters_keyboard, tasks_filters_keyboard
-from checks_common import (
+from bot.filters.checks_common import (
     FIELD_LABELS as CHECKS_FIELD_LABELS,
     build_filters_text as build_checks_filters_text,
     get_filters as get_checks_filters,
     remove_filter as remove_checks_filter,
     save_filter as save_checks_filter,
 )
-from tasks_common import (
+from bot.filters.tasks_common import (
     TASK_FIELD_LABELS,
     build_tasks_filters_text,
     get_task_filters,
     remove_task_filter,
     save_task_filter,
 )
+from bot.keyboards.checks import checks_filters_keyboard
+from bot.keyboards.tasks import tasks_filters_keyboard
 
 router = Router()
 

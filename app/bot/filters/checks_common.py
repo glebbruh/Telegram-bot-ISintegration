@@ -23,6 +23,8 @@ async def remove_filter(state: FSMContext, key: str):
     await state.update_data(**{FILTERS_KEY: filters})
 
 def build_filters_text(filters: dict) -> str:
+    show_my_label = "Да" if filters.get("show_my", {}).get("value") is True else "Нет"
+    made_by_me_label = "Да" if filters.get("made_by_me", {}).get("value") is True else "Нет"
     lines = [
         "Выберите фильтры для раздела «Проверки».",
         "",
@@ -32,5 +34,7 @@ def build_filters_text(filters: dict) -> str:
         f"- Статус: {filters.get('status', {}).get('label', 'не выбрано')}",
         f"- Просрочено: {filters.get('overdue', {}).get('label', 'не выбрано')}",
         f"- Шаблон чек-листа: {filters.get('pattern', {}).get('name', 'не выбрано')}",
+        f"- Показывать только мои задачи: {show_my_label}",
+        f"- Показывать назначенные мной: {made_by_me_label}",
     ]
     return "\n".join(lines)

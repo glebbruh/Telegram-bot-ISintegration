@@ -25,10 +25,14 @@ async def clear_task_filters(state: FSMContext):
     await state.update_data(**{TASK_FILTERS_KEY: {}})
 
 def build_tasks_filters_text(filters: dict) -> str:
+    show_my_label = "Да" if filters.get("show_my", {}).get("value") is True else "Нет"
+    made_by_me_label = "Да" if filters.get("made_by_me", {}).get("value") is True else "Нет"
     lines = [
         "Выберите фильтры для раздела «Задачи».",
         "",
         f"• Сроки: {filters.get('deadline_period', {}).get('label', 'не выбрано')}",
         f"• Приоритет: {filters.get('priority', {}).get('label', 'не выбрано')}",
+        f"• Показывать только мои задачи: {show_my_label}",
+        f"• Показывать назначенные мной: {made_by_me_label}",
     ]
     return "\n".join(lines)
