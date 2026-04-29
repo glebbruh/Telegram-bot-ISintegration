@@ -30,4 +30,4 @@ def format_checks_response(data: dict) -> str:
     return "\n".join(lines)
 
 def get_checks_items(data: dict) -> list[dict]:
-    return data.get("checks", data.get("items", []))
+    return data.get("items", [])

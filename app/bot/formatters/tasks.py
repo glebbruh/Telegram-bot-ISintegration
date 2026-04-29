@@ -18,4 +18,4 @@ def format_tasks_response(data: dict) -> str:
     return "\n".join(lines)
 
 def get_tasks_items(data: dict) -> list[dict]:
-    return data.get("tasks", data.get("items", []))
+    return data.get("items", [])

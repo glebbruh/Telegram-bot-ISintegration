@@ -63,14 +63,7 @@ def build_tasks_query_params(user_id: int | None, filters: dict) -> dict:
 
 async def send_tasks_filters_to_backend(user_id: int | None, filters: dict) -> dict:
     url = f"{_backend_base_url()}/tasks"
-    date_period = filters.get("deadline_period", {})
-    priority = filters.get("priority", {})
-    params = {
-        "user_id": _as_query_value(user_id),
-        "date_period_from": _as_query_value(date_period.get("from")),
-        "date_period_to": _as_query_value(date_period.get("to")),
-        "priority": _as_query_value(priority.get("value")),
-    }
+    params = build_tasks_query_params()
     async with httpx.AsyncClient(timeout=15.0) as client:
         response = await client.get(url, params=params)
     if response.status_code != 200:
