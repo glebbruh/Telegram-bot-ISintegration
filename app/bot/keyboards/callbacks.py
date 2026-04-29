@@ -17,3 +17,6 @@ class TasksMenuCb(CallbackData, prefix="tasks_menu"):
 
 class TaskPriorityChoiceCb(CallbackData, prefix="task_priority"):
     value: str
+
+class LogoutConfirmCb(CallbackData, prefix="logout"):
+    action: str

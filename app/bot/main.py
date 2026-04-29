@@ -8,6 +8,7 @@ from bot.handlers.checks import router as checks_router
 from bot.handlers.tasks import router as tasks_router
 from bot.handlers.patterns import router as patterns_router
 from bot.handlers.bot_calendar import router as calendar_router
+from bot.handlers.session import router as session_router
 
 load_dotenv()
 
@@ -24,6 +25,7 @@ async def main():
     dp.include_router(tasks_router)
     dp.include_router(patterns_router)
     dp.include_router(calendar_router)
+    dp.include_router(session_router)
     await dp.start_polling(bot)
 
 if __name__ == "__main__":
