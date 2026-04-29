@@ -1,6 +1,5 @@
 #Авторизация
 import os
-
 import httpx
 from aiogram import Router
 from aiogram.filters import CommandStart, StateFilter
@@ -11,9 +10,12 @@ from email_validator import EmailNotValidError, validate_email
 
 router = Router()
 
+class AuthStates(StatesGroup):
+    waiting_for_email = State()
+
 #TEST WITHOUT BACKEND
-# from menu import main_sections_keyboard
-#
+from bot.keyboards.menu import main_sections_keyboard
+
 # @router.message(CommandStart())
 # async def cmd_start(message: Message, state: FSMContext):
 #     await message.answer(
@@ -21,10 +23,7 @@ router = Router()
 #         reply_markup=main_sections_keyboard()
 #     )
 
-class AuthStates(StatesGroup):
-    waiting_for_email = State()
-
-async def send_auth_to_backend(email: str, telegram_id: int) -> bool:
+async def send_auth_to_backend(email: str, telegram_id: int) -> dict:
     backend_url = os.getenv("BACKEND_AUTH_URL", "").strip()
     if not backend_url:
         raise RuntimeError("BACKEND_AUTH_URL is not set")
@@ -32,12 +31,14 @@ async def send_auth_to_backend(email: str, telegram_id: int) -> bool:
         "email": email,
         "telegram_id": telegram_id
     }
-    timeout = httpx.Timeout(15.0)
-    async with httpx.AsyncClient(timeout=timeout) as client:
+    async with httpx.AsyncClient(timeout=15.0) as client:
         response = await client.post(backend_url, json=payload)
         response.raise_for_status()
         data = response.json()
-    return bool(data.get("success"))
+    return {
+        "success": bool(data.get("success")),
+        "user_id": data.get("user_id"),
+    }
 
 #обработка старта
 @router.message(CommandStart())
@@ -46,7 +47,6 @@ async def cmd_start(message: Message, state: FSMContext):
     await message.answer(
         "Для входа в бот введите ваш email"
     )
-
 
 #обработка ввода email
 @router.message(StateFilter(AuthStates.waiting_for_email))
@@ -62,7 +62,7 @@ async def process_email(message: Message, state: FSMContext):
         )
         return
     try:
-        is_authorized = await send_auth_to_backend(
+        auth_result = await send_auth_to_backend(
             email=email,
             telegram_id=telegram_id
         )
@@ -81,10 +81,18 @@ async def process_email(message: Message, state: FSMContext):
             "Произошла внутренняя ошибка. Попробуйте позже."
         )
         return
-    if is_authorized:
-        await state.clear()
+    if auth_result["success"]:
+        user_id = auth_result.get("user_id")
+        if user_id is None:
+            await message.answer(
+                "Бекэнд не вернул id пользователя. Попробуйте позже."
+            )
+            return
+        await state.update_data(user_id=user_id)
+        await state.set_state(None)
         await message.answer(
-            "Авторизация прошла успешно."
+            "Вы успешно вошли в программу.",
+            reply_markup=main_sections_keyboard()
         )
     else:
         await message.answer(

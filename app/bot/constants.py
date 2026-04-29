@@ -1,0 +1,41 @@
+CHECK_STATUS_LABELS = {
+    "created": "Назначено",
+    "process": "В работе",
+    "completed": "Завершено",
+    "verification": "Валидация",
+}
+
+CHECK_STATUS_LABELS_LOWER = {
+    "created": "назначено",
+    "process": "в работе",
+    "completed": "завершено",
+    "verification": "валидация",
+}
+
+CHECK_STATUS_EMOJI = {
+    "process": "☑️",
+    "completed": "✅",
+    "verification": "⚠️",
+    "created": "⚪",
+}
+
+TASK_PRIORITY_LABELS = {
+    "none": "Без приоритета",
+    "low": "Низкий",
+    "medium": "Средний",
+    "high": "Высокий",
+}
+
+TASK_PRIORITY_LABELS_LOWER = {
+    "none": "без приоритета",
+    "low": "низкий",
+    "medium": "средний",
+    "high": "высокий",
+}
+
+TASK_STATUS_LABELS = {
+    "process": "в работе",
+    "completed": "завершено",
+    "verification": "валидация",
+    "created": "назначено",
+}
