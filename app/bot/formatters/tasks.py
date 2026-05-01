@@ -1,4 +1,4 @@
-from bot.formatters.dates import format_period
+from bot.formatters.dates import format_date
 from bot.constants import TASK_PRIORITY_LABELS_LOWER, TASK_STATUS_LABELS
 
 def format_tasks_response(data: dict) -> str:
@@ -12,8 +12,8 @@ def format_tasks_response(data: dict) -> str:
         name = item.get("name", "Без названия")
         priority_code = item.get("priority")
         priority_label = TASK_PRIORITY_LABELS_LOWER.get(priority_code, "без приоритета")
-        deadline_period = format_period(item.get("deadline_period"))
-        line = f"{status_label} {index}. {name} — {priority_label} — {deadline_period}"
+        deadline_at = format_date(item.get("deadline_at"))
+        line = f"{status_label} {index}. {name} — {priority_label} — {deadline_at}"
         lines.append(line)
     return "\n".join(lines)
 
