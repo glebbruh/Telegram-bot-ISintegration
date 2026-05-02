@@ -36,6 +36,11 @@ TASK_PRIORITY_LABELS_LOWER = {
 TASK_STATUS_LABELS = {
     "process": "в работе",
     "completed": "завершено",
-    "verification": "валидация",
     "created": "назначено",
+    "revise": "вернули на доработку",
+    "review": "на проверке",
+    "validation": "промежуточная валидация",
+    "archived": "в архиве",
+    "manual_review": "ручная проверка",
+    "cancelled": "отменено",
 }

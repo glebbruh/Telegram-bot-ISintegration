@@ -3,7 +3,7 @@ from aiogram import F, Router
 from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery, Message, BufferedInputFile
 
-from bot.constants import TASK_PRIORITY_LABELS
+from bot.constants import TASK_PRIORITY_LABELS, TASK_STATUS_LABELS
 from bot.filters.tasks_common import (
     clear_task_filters,
     get_task_filters,
@@ -113,7 +113,7 @@ async def tasks_today_summary(callback: CallbackQuery, state: FSMContext):
         return
     await callback.answer()
     await callback.message.answer(
-        format_today_summary(response_data, "задач")
+        format_today_summary(response_data, "задач", TASK_STATUS_LABELS)
     )
 
 @router.callback_query(TasksMenuCb.filter(F.action == "clear_all"))
