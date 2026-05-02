@@ -1,0 +1,20 @@
+services:
+  api:
+    build:
+      context: ./api
+    container_name: checkoffice_api
+    env_file:
+      - .env
+    ports:
+      - "8000:8000"
+    restart: unless-stopped
+
+  bot:
+    build:
+      context: ./bot
+    container_name: checkoffice_bot
+    env_file:
+      - .env
+    depends_on:
+      - api
+    restart: unless-stopped
