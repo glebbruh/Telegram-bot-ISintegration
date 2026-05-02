@@ -23,16 +23,20 @@ from bot.keyboards.menu import main_sections_keyboard
 #         reply_markup=main_sections_keyboard()
 #     )
 
-async def send_auth_to_backend(email: str, telegram_id: int) -> dict:
-    backend_url = os.getenv("BACKEND_AUTH_URL", "").strip()
-    if not backend_url:
+def _backend_base_url() -> str:
+    base_url = os.getenv("BACKEND_AUTH_URL", "").strip()
+    if not base_url:
         raise RuntimeError("BACKEND_AUTH_URL is not set")
+    return base_url.rstrip("/")
+
+async def send_auth_to_backend(email: str, telegram_id: int) -> dict:
+    url = f"{_backend_base_url()}/auth/login"
     payload = {
         "email": email,
         "telegram_id": telegram_id
     }
     async with httpx.AsyncClient(timeout=15.0) as client:
-        response = await client.post(backend_url, json=payload)
+        response = await client.post(url, json=payload)
         response.raise_for_status()
         data = response.json()
     return {
@@ -66,9 +70,9 @@ async def process_email(message: Message, state: FSMContext):
             email=email,
             telegram_id=telegram_id
         )
-    except httpx.HTTPStatusError:
+    except httpx.HTTPStatusError as e:
         await message.answer(
-            "Сервер авторизации вернул ошибку. Попробуйте позже."
+            f"Сервер авторизации вернул ошибку: HTTP {e.response.status_code}\n{e.response.text}"
         )
         return
     except httpx.RequestError:
