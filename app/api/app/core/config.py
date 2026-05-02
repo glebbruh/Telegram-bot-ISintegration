@@ -11,12 +11,14 @@ class Settings:
     CHECKOFFICE_API_KEY: str = os.getenv(
         "CHECKOFFICE_API_KEY"
     )
-    CHECKOFFICE_USERS_PATH: str = os.getenv(
-        "CHECKOFFICE_USERS_PATH"
-    )
     CHECKOFFICE_PER_PAGE: int = int(
         os.getenv("CHECKOFFICE_PER_PAGE")
     )
+
+    CHECKOFFICE_USERS_PATH: str = "/publicapi/v1/users"
+    CHECKOFFICE_PATTERNS_PATH: str = "/publicapi/v1/patterns"
+    CHECKOFFICE_TASKS_PATH: str = "/publicapi/v1/tasks"
+    CHECKOFFICE_INSPECTIONS_PATH: str = "/publicapi/v1/inspections"
 
 
 settings = Settings()

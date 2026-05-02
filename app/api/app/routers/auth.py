@@ -9,7 +9,7 @@ router = APIRouter(prefix="/auth", tags=["auth"])
 @router.post("/login", response_model=LoginResponse)
 async def login(data: LoginRequest) -> LoginResponse:
     try:
-        user = await CheckOfficeService.find_user_by_email(data.email)
+        user = await CheckOfficeService.find_user_by_email(str(data.email))
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
@@ -19,7 +19,4 @@ async def login(data: LoginRequest) -> LoginResponse:
     if user is None:
         return LoginResponse(success=False)
 
-    # если потом захочешь, здесь можно сохранить:
-    # telegram_id -> user.id, user.email
-
-    return LoginResponse(success=True)
+    return LoginResponse(success=True, id=user.id)
