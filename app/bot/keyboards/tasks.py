@@ -68,12 +68,6 @@ def task_priority_keyboard() -> InlineKeyboardMarkup:
         inline_keyboard=[
             [
                 InlineKeyboardButton(
-                    text="Без приоритета",
-                    callback_data=TaskPriorityChoiceCb(value="none").pack()
-                )
-            ],
-            [
-                InlineKeyboardButton(
                     text="Низкий",
                     callback_data=TaskPriorityChoiceCb(value="low").pack()
                 )
@@ -81,7 +75,7 @@ def task_priority_keyboard() -> InlineKeyboardMarkup:
             [
                 InlineKeyboardButton(
                     text="Средний",
-                    callback_data=TaskPriorityChoiceCb(value="medium").pack()
+                    callback_data=TaskPriorityChoiceCb(value="normal").pack()
                 )
             ],
             [

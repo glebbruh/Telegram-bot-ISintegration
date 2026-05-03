@@ -20,16 +20,14 @@ CHECK_STATUS_EMOJI = {
 }
 
 TASK_PRIORITY_LABELS = {
-    "none": "Без приоритета",
     "low": "Низкий",
-    "medium": "Средний",
+    "normal": "Средний",
     "high": "Высокий",
 }
 
 TASK_PRIORITY_LABELS_LOWER = {
-    "none": "без приоритета",
     "low": "низкий",
-    "medium": "средний",
+    "normal": "средний",
     "high": "высокий",
 }
 

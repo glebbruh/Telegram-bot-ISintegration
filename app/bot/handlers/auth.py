@@ -72,7 +72,7 @@ async def process_email(message: Message, state: FSMContext):
         )
     except httpx.HTTPStatusError as e:
         await message.answer(
-            f"Сервер авторизации вернул ошибку: HTTP {e.response.status_code}\n{e.response.text}"
+            f"Сервер авторизации вернул ошибку: HTTP {e.response.status_code}\n{e.response.text}. Попробуйте позже."
         )
         return
     except httpx.RequestError:
