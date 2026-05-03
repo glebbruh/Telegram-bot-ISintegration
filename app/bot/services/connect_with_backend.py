@@ -65,7 +65,7 @@ def build_tasks_query_params(user_id: int | None, filters: dict) -> dict:
 async def send_tasks_filters_to_backend(user_id: int | None, filters: dict) -> dict:
     url = f"{_backend_base_url()}/tasks"
     params = build_tasks_query_params(user_id, filters)
-    async with httpx.AsyncClient(timeout=30.0) as client:
+    async with httpx.AsyncClient(timeout=300.0) as client:
         response = await client.get(url, params=params)
     if response.status_code != 200:
         raise RuntimeError(f"Tasks backend error: HTTP {response.status_code}")
