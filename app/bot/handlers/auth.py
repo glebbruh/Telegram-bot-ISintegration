@@ -4,17 +4,14 @@ import httpx
 from aiogram import Router
 from aiogram.filters import CommandStart, StateFilter
 from aiogram.fsm.context import FSMContext
-from aiogram.fsm.state import State, StatesGroup
 from aiogram.types import Message
 from email_validator import EmailNotValidError, validate_email
 
 router = Router()
 
-class AuthStates(StatesGroup):
-    waiting_for_email = State()
-
 #TEST WITHOUT BACKEND
 from bot.keyboards.menu import main_sections_keyboard
+from bot.services.auth_help import AuthStates
 
 # @router.message(CommandStart())
 # async def cmd_start(message: Message, state: FSMContext):

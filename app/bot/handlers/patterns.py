@@ -6,7 +6,7 @@ from aiogram.fsm.state import State, StatesGroup
 from aiogram.types import CallbackQuery, Message
 
 from bot.filters.checks_common import save_filter
-from bot.handlers.common import get_current_user_id, send_new_filters_message
+from bot.handlers.common import require_user_id, send_new_filters_message
 from bot.keyboards.callbacks import ChecksMenuCb, PatternChoiceCb
 from bot.keyboards.checks import patterns_results_keyboard
 from bot.services.connect_with_backend import fetch_patterns_from_backend
@@ -18,9 +18,8 @@ class PatternSearchStates(StatesGroup):
 
 @router.callback_query(ChecksMenuCb.filter(F.action == "pattern"))
 async def open_pattern_search(callback: CallbackQuery, state: FSMContext):
-    user_id = await get_current_user_id(state)
+    user_id = await require_user_id(state)
     if user_id is None:
-        await callback.answer("Не найден user_id. Войдите в систему заново.", show_alert=True)
         return
     try:
         patterns = await fetch_patterns_from_backend(user_id)

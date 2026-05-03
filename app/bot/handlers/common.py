@@ -5,10 +5,23 @@ from bot.filters.checks_common import build_filters_text, get_filters
 from bot.filters.tasks_common import build_tasks_filters_text, get_task_filters
 from bot.keyboards.checks import checks_filters_keyboard
 from bot.keyboards.tasks import tasks_filters_keyboard
+from bot.services.auth_help import AuthStates
 
 async def get_current_user_id(state: FSMContext) -> int | None:
     data = await state.get_data()
     return data.get("user_id")
+
+async def require_user_id(callback: CallbackQuery, state: FSMContext) -> int | None:
+    user_id = await get_current_user_id(state)
+    if user_id is None:
+        await state.set_state(AuthStates.waiting_for_email)
+        await callback.answer()
+        await callback.message.answer(
+            "Сессия сбросилась или вы ещё не авторизованы.\n"
+            "Введите ваш email для входа."
+        )
+        return None
+    return user_id
 
 async def send_new_filters_message(chat_id: int, bot, state: FSMContext):
     filters = await get_filters(state)

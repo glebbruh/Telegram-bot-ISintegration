@@ -13,7 +13,7 @@ from bot.filters.tasks_common import (
 from bot.formatters.summary import format_today_summary
 from bot.formatters.tasks import format_tasks_response, get_tasks_items
 from bot.handlers.bot_calendar import open_range_calendar
-from bot.handlers.common import get_current_user_id, show_tasks_filters_message, toggle_mutually_exclusive_flag
+from bot.handlers.common import require_user_id, show_tasks_filters_message, toggle_mutually_exclusive_flag
 from bot.keyboards.callbacks import TaskPriorityChoiceCb, TasksMenuCb
 from bot.keyboards.tasks import task_priority_keyboard
 from bot.services.connect_with_backend import send_tasks_filters_to_backend, fetch_tasks_today_summary
@@ -102,7 +102,9 @@ async def toggle_made_by_me_tasks(callback: CallbackQuery, state: FSMContext):
 
 @router.callback_query(TasksMenuCb.filter(F.action == "today_summary"))
 async def tasks_today_summary(callback: CallbackQuery, state: FSMContext):
-    user_id = await get_current_user_id(state)
+    user_id = await require_user_id(state)
+    if user_id is None:
+        return
     try:
         response_data = await fetch_tasks_today_summary(user_id)
     except Exception as e:
@@ -126,7 +128,9 @@ async def clear_all_task_filters_handler(callback: CallbackQuery, state: FSMCont
 @router.callback_query(TasksMenuCb.filter(F.action == "apply"))
 async def apply_task_filters(callback: CallbackQuery, state: FSMContext):
     filters = await get_task_filters(state)
-    user_id = await get_current_user_id(state)
+    user_id = await require_user_id(state)
+    if user_id is None:
+        return
     try:
         response_data = await send_tasks_filters_to_backend(
             user_id=user_id,
