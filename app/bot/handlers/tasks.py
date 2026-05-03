@@ -102,6 +102,7 @@ async def toggle_made_by_me_tasks(callback: CallbackQuery, state: FSMContext):
 
 @router.callback_query(TasksMenuCb.filter(F.action == "today_summary"))
 async def tasks_today_summary(callback: CallbackQuery, state: FSMContext):
+    await callback.answer()
     user_id = await require_user_id(callback, state)
     if user_id is None:
         return
@@ -113,7 +114,6 @@ async def tasks_today_summary(callback: CallbackQuery, state: FSMContext):
             f"Не удалось получить сводку по задачам: {e}"
         )
         return
-    await callback.answer()
     await callback.message.answer(
         format_today_summary(response_data, "задач", TASK_STATUS_LABELS)
     )
@@ -127,6 +127,7 @@ async def clear_all_task_filters_handler(callback: CallbackQuery, state: FSMCont
 
 @router.callback_query(TasksMenuCb.filter(F.action == "apply"))
 async def apply_task_filters(callback: CallbackQuery, state: FSMContext):
+    await callback.answer()
     filters = await get_task_filters(state)
     user_id = await require_user_id(callback, state)
     if user_id is None:
@@ -142,7 +143,6 @@ async def apply_task_filters(callback: CallbackQuery, state: FSMContext):
             f"Не удалось отправить фильтры задач на бекэнд: {e}"
         )
         return
-    await callback.answer()
     items = get_tasks_items(response_data)
     if len(items) > 20:
         pdf_bytes = build_tasks_pdf_bytes(response_data)
