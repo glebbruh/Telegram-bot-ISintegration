@@ -6,7 +6,7 @@ from app.schemas.inspection_schema import (
     InspectionResponse,
     InspectionStatus,
     InspectionSummary,
-    InspectionSummaryResponse,
+    InspectionSummaryResponse, InspectionListResponse,
 )
 from app.services.checkoffice_service import CheckOfficeService
 
@@ -28,7 +28,7 @@ async def get_inspections_today_summary(
 
 
 
-@router.get("", response_model=list[InspectionResponse])
+@router.get("", response_model=InspectionListResponse)
 async def get_inspections(user_id: int,
                           date_at_from: datetime.date | None = None,
                           date_at_to: datetime.date | None = None,
@@ -109,4 +109,4 @@ async def get_inspections(user_id: int,
             )
         )
 
-    return response
+    return InspectionListResponse(items=response)

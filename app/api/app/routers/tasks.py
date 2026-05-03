@@ -1,9 +1,10 @@
 import datetime
+from typing import Any, Coroutine
 
 from fastapi import APIRouter, HTTPException, status
 
 from app.schemas.checkoffice import CheckOfficeTask
-from app.schemas.task_schema import TaskPriority, TaskSummaryResponse, TaskSummary
+from app.schemas.task_schema import TaskPriority, TaskSummaryResponse, TaskSummary, TaskListResponse, TaskResponse
 from app.services.checkoffice_service import CheckOfficeService
 
 router = APIRouter(prefix="/tasks", tags=["tasks"])
@@ -22,13 +23,13 @@ async def get_tasks_today_summary(user_id: int | None = None) -> TaskSummaryResp
     return TaskSummaryResponse(summary=TaskSummary(**summary))
 
 
-@router.get("", response_model=list[CheckOfficeTask])
+@router.get("", response_model=TaskListResponse)
 async def tasks(user_id: int,
                 priority: TaskPriority | None = None,
                 date_period_from: datetime.date | None = None,
                 date_period_to: datetime.date | None = None,
                 show_my: bool = True,
-                made_by_me: bool = False) -> list[CheckOfficeTask]:
+                made_by_me: bool = False) -> TaskListResponse:
 
     if date_period_from is None:
         date_period_from = datetime.date.today()
@@ -54,6 +55,25 @@ async def tasks(user_id: int,
             detail=f"Ошибка при запросе к CheckOffice: {str(e)}",
         )
 
-    return return_tasks
+    response = []
+
+    for task in return_tasks:
+        response.append(
+
+            TaskResponse(
+
+                name=task.title,
+
+                status=task.status,
+
+                priority=task.priority,
+
+                deadline_at=task.expire_at,
+
+            )
+
+        )
+
+    return TaskListResponse(items=response)
 
 
