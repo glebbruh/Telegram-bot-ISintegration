@@ -37,3 +37,6 @@ class InspectionSummary(BaseModel):
 
 class InspectionSummaryResponse(BaseModel):
     summary: InspectionSummary
+
+class InspectionListResponse(BaseModel):
+    items: list[InspectionResponse]
