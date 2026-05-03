@@ -35,7 +35,7 @@ async def send_auth_to_backend(email: str, telegram_id: int) -> dict:
         "email": email,
         "telegram_id": telegram_id
     }
-    async with httpx.AsyncClient(timeout=15.0) as client:
+    async with httpx.AsyncClient(timeout=20.0) as client:
         response = await client.post(url, json=payload)
         response.raise_for_status()
         data = response.json()
