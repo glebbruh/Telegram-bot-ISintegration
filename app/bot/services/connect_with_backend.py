@@ -97,7 +97,7 @@ async def fetch_tasks_today_summary(user_id: int | None) -> dict:
     params = {
         "user_id": _as_query_value(user_id),
     }
-    async with httpx.AsyncClient(timeout=15.0) as client:
+    async with httpx.AsyncClient(timeout=30.0) as client:
         response = await client.get(url, params=params)
     if response.status_code != 200:
         raise RuntimeError(f"Tasks today summary error: HTTP {response.status_code}")
