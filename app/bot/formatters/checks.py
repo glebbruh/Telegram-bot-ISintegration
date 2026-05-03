@@ -31,3 +31,31 @@ def format_checks_response(data: dict) -> str:
 
 def get_checks_items(data: dict) -> list[dict]:
     return data.get("items", [])
+
+def build_checks_status_legend_for_pdf() -> str:
+    return (
+        f"В работе — {CHECK_STATUS_LABELS['process']}\n"
+        f"Завершено — {CHECK_STATUS_LABELS['completed']}\n"
+        f"Валидация — {CHECK_STATUS_LABELS['verification']}\n"
+        f"Назначено — {CHECK_STATUS_LABELS['created']}"
+    )
+
+def format_checks_response_for_pdf(data: dict | list) -> str:
+    items = data if isinstance(data, list) else data.get("items", [])
+    if not items:
+        return "По вашему запросу проверки не найдены."
+    lines = []
+    for index, item in enumerate(items, start=1):
+        status = item.get("status")
+        status_label = CHECK_STATUS_LABELS.get(status, "Без статуса")
+        name = item.get("name", "Без названия")
+        pattern_name = item.get("pattern_name", "Без шаблона")
+        date_at = format_date(item.get("date_at"))
+        deadline_at = format_date(item.get("deadline_at"))
+        line = (
+            f"{status_label} {index}. {name} — {pattern_name} — "
+            f"плановое начало ({date_at}) — "
+            f"плановое завершение ({deadline_at})"
+        )
+        lines.append(line)
+    return "\n".join(lines)

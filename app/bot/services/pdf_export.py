@@ -6,26 +6,30 @@ from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
 from reportlab.pdfgen import canvas
 
-from bot.formatters.checks import build_checks_status_legend, format_checks_response
+from bot.formatters.checks import build_checks_status_legend_for_pdf, format_checks_response_for_pdf
 from bot.formatters.tasks import format_tasks_response
 
-FONT_NAME = "DejaVuSans"
-FONT_PATHS = [
-    "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
-    "C:/Windows/Fonts/arial.ttf",
-]
+FONT_NAME = "NotoSans"
+FONT_NAME_BOLD = "NotoSans-Bold"
+
+BASE_DIR = Path(__file__).resolve().parents[1]
+FONT_PATH = BASE_DIR / "services" / "fonts" / "NotoSans-Regular.ttf"
+FONT_PATH_BOLD = BASE_DIR / "services" / "fonts" / "NotoSans-Bold.ttf"
 
 def _register_font():
     try:
         pdfmetrics.getFont(FONT_NAME)
         return
     except KeyError:
-        pass
-    for path in FONT_PATHS:
-        if Path(path).exists():
-            pdfmetrics.registerFont(TTFont(FONT_NAME, path))
-            return
-    raise RuntimeError("Не найден подходящий TTF-шрифт для PDF.")
+        if not FONT_PATH.exists():
+            raise RuntimeError(f"Шрифт не найден: {FONT_PATH}")
+        pdfmetrics.registerFont(TTFont(FONT_NAME, str(FONT_PATH)))
+    try:
+        pdfmetrics.getFont(FONT_NAME_BOLD)
+    except KeyError:
+        if not FONT_PATH_BOLD.exists():
+            raise RuntimeError(f"Шрифт не найден: {FONT_PATH_BOLD}")
+        pdfmetrics.registerFont(TTFont(FONT_NAME_BOLD, str(FONT_PATH_BOLD)))
 
 
 def _draw_multiline_text(pdf: canvas.Canvas, text: str, x: float, y: float, line_height: float, bottom_margin: float):
@@ -54,14 +58,14 @@ def build_checks_pdf_bytes(response_data: dict) -> bytes:
     y = top_y - 12 * mm
     y = _draw_multiline_text(
         pdf,
-        build_checks_status_legend(),
+        build_checks_status_legend_for_pdf(),
         left_margin,
         y,
         line_height,
         bottom_margin,
     )
     y -= 5 * mm
-    checks_text = format_checks_response(response_data)
+    checks_text = format_checks_response_for_pdf(response_data)
     _draw_multiline_text(
         pdf,
         checks_text,
