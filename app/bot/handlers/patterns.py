@@ -18,7 +18,7 @@ class PatternSearchStates(StatesGroup):
 
 @router.callback_query(ChecksMenuCb.filter(F.action == "pattern"))
 async def open_pattern_search(callback: CallbackQuery, state: FSMContext):
-    user_id = await require_user_id(state)
+    user_id = await require_user_id(callback, state)
     if user_id is None:
         return
     try:

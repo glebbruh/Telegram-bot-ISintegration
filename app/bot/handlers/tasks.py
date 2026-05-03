@@ -102,7 +102,7 @@ async def toggle_made_by_me_tasks(callback: CallbackQuery, state: FSMContext):
 
 @router.callback_query(TasksMenuCb.filter(F.action == "today_summary"))
 async def tasks_today_summary(callback: CallbackQuery, state: FSMContext):
-    user_id = await require_user_id(state)
+    user_id = await require_user_id(callback, state)
     if user_id is None:
         return
     try:
@@ -128,7 +128,7 @@ async def clear_all_task_filters_handler(callback: CallbackQuery, state: FSMCont
 @router.callback_query(TasksMenuCb.filter(F.action == "apply"))
 async def apply_task_filters(callback: CallbackQuery, state: FSMContext):
     filters = await get_task_filters(state)
-    user_id = await require_user_id(state)
+    user_id = await require_user_id(callback, state)
     if user_id is None:
         return
     try:

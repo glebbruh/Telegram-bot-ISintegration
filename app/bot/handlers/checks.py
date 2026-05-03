@@ -132,7 +132,7 @@ async def toggle_made_by_me_checks(callback: CallbackQuery, state: FSMContext):
 
 @router.callback_query(ChecksMenuCb.filter(F.action == "today_summary"))
 async def checks_today_summary(callback: CallbackQuery, state: FSMContext):
-    user_id = await require_user_id(state)
+    user_id = await require_user_id(callback, state)
     if user_id is None:
         return
     try:
@@ -163,7 +163,7 @@ async def clear_all_filters(callback: CallbackQuery, state: FSMContext):
 @router.callback_query(ChecksMenuCb.filter(F.action == "apply"))
 async def apply_filters(callback: CallbackQuery, state: FSMContext):
     filters = await get_filters(state)
-    user_id = await require_user_id(state)
+    user_id = await require_user_id(callback, state)
     if user_id is None:
         return
     try:

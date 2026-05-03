@@ -44,6 +44,7 @@ async def send_auth_to_backend(email: str, telegram_id: int) -> dict:
 #обработка старта
 @router.message(CommandStart())
 async def cmd_start(message: Message, state: FSMContext):
+    await state.clear()
     await state.set_state(AuthStates.waiting_for_email)
     await message.answer(
         "Для входа в бот введите ваш email"

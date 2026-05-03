@@ -2,7 +2,7 @@ from aiogram import F, Router
 from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery, Message, ReplyKeyboardRemove
 
-from bot.handlers.auth import AuthStates
+from bot.services.auth_help import AuthStates
 from bot.keyboards.callbacks import LogoutConfirmCb
 from bot.keyboards.menu import logout_confirm_keyboard
 
