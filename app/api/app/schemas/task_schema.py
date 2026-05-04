@@ -24,7 +24,7 @@ class TaskResponse(BaseModel):
     name: str
     status: TaskStatus
     priority: TaskPriority | None = None
-    deadline: datetime.datetime | None = None
+    deadline_at: datetime.datetime | None = None
 
 class TaskSummary(BaseModel):
     created: int = 0
@@ -40,6 +40,9 @@ class TaskSummary(BaseModel):
 
 class TaskSummaryResponse(BaseModel):
     summary: TaskSummary
+
+class TaskListResponse(BaseModel):
+    items: list[TaskResponse]
 
 
 

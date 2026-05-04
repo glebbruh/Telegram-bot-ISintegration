@@ -1,19 +1,18 @@
 #Авторизация
 import os
-
 import httpx
 from aiogram import Router
 from aiogram.filters import CommandStart, StateFilter
 from aiogram.fsm.context import FSMContext
-from aiogram.fsm.state import State, StatesGroup
 from aiogram.types import Message
 from email_validator import EmailNotValidError, validate_email
 
 router = Router()
 
 #TEST WITHOUT BACKEND
-# from menu import main_sections_keyboard
-#
+from bot.keyboards.menu import main_sections_keyboard
+from bot.services.auth_help import AuthStates
+
 # @router.message(CommandStart())
 # async def cmd_start(message: Message, state: FSMContext):
 #     await message.answer(
@@ -21,32 +20,35 @@ router = Router()
 #         reply_markup=main_sections_keyboard()
 #     )
 
-class AuthStates(StatesGroup):
-    waiting_for_email = State()
-
-async def send_auth_to_backend(email: str, telegram_id: int) -> bool:
-    backend_url = os.getenv("BACKEND_AUTH_URL", "").strip()
-    if not backend_url:
+def _backend_base_url() -> str:
+    base_url = os.getenv("BACKEND_AUTH_URL", "").strip()
+    if not base_url:
         raise RuntimeError("BACKEND_AUTH_URL is not set")
+    return base_url.rstrip("/")
+
+async def send_auth_to_backend(email: str, telegram_id: int) -> dict:
+    url = f"{_backend_base_url()}/auth/login"
     payload = {
         "email": email,
         "telegram_id": telegram_id
     }
-    timeout = httpx.Timeout(15.0)
-    async with httpx.AsyncClient(timeout=timeout) as client:
-        response = await client.post(backend_url, json=payload)
+    async with httpx.AsyncClient(timeout=20.0) as client:
+        response = await client.post(url, json=payload)
         response.raise_for_status()
         data = response.json()
-    return bool(data.get("success"))
+    return {
+        "success": bool(data.get("success")),
+        "user_id": data.get("user_id"),
+    }
 
 #обработка старта
 @router.message(CommandStart())
 async def cmd_start(message: Message, state: FSMContext):
+    await state.clear()
     await state.set_state(AuthStates.waiting_for_email)
     await message.answer(
         "Для входа в бот введите ваш email"
     )
-
 
 #обработка ввода email
 @router.message(StateFilter(AuthStates.waiting_for_email))
@@ -62,13 +64,13 @@ async def process_email(message: Message, state: FSMContext):
         )
         return
     try:
-        is_authorized = await send_auth_to_backend(
+        auth_result = await send_auth_to_backend(
             email=email,
             telegram_id=telegram_id
         )
-    except httpx.HTTPStatusError:
+    except httpx.HTTPStatusError as e:
         await message.answer(
-            "Сервер авторизации вернул ошибку. Попробуйте позже."
+            f"Сервер авторизации вернул ошибку: HTTP {e.response.status_code}\n{e.response.text}. Попробуйте позже."
         )
         return
     except httpx.RequestError:
@@ -81,10 +83,18 @@ async def process_email(message: Message, state: FSMContext):
             "Произошла внутренняя ошибка. Попробуйте позже."
         )
         return
-    if is_authorized:
-        await state.clear()
+    if auth_result["success"]:
+        user_id = auth_result.get("user_id")
+        if user_id is None:
+            await message.answer(
+                "Бекэнд не вернул id пользователя. Попробуйте позже."
+            )
+            return
+        await state.update_data(user_id=user_id)
+        await state.set_state(None)
         await message.answer(
-            "Авторизация прошла успешно."
+            "Вы успешно вошли в программу.",
+            reply_markup=main_sections_keyboard()
         )
     else:
         await message.answer(

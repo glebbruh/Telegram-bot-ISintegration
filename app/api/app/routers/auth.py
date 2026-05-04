@@ -19,4 +19,4 @@ async def login(data: LoginRequest) -> LoginResponse:
     if user is None:
         return LoginResponse(success=False)
 
-    return LoginResponse(success=True, id=user.id)
+    return LoginResponse(success=True, user_id=user.id)
