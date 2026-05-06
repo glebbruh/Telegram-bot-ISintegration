@@ -26,11 +26,11 @@ def _backend_base_url() -> str:
         raise RuntimeError("BACKEND_AUTH_URL is not set")
     return base_url.rstrip("/")
 
-async def send_auth_to_backend(email: str, telegram_id: int) -> dict:
+async def send_auth_to_backend(email: str, chat_id: int) -> dict:
     url = f"{_backend_base_url()}/auth/login"
     payload = {
         "email": email,
-        "telegram_id": telegram_id
+        "chat_id": chat_id
     }
     async with httpx.AsyncClient(timeout=20.0) as client:
         response = await client.post(url, json=payload)
@@ -54,7 +54,7 @@ async def cmd_start(message: Message, state: FSMContext):
 @router.message(StateFilter(AuthStates.waiting_for_email))
 async def process_email(message: Message, state: FSMContext):
     raw_email = (message.text or "").strip()
-    telegram_id = message.from_user.id
+    chat_id = message.chat.id
     try:
         valid = validate_email(raw_email, check_deliverability=False)
         email = valid.normalized
@@ -66,7 +66,7 @@ async def process_email(message: Message, state: FSMContext):
     try:
         auth_result = await send_auth_to_backend(
             email=email,
-            telegram_id=telegram_id
+            chat_id=chat_id
         )
     except httpx.HTTPStatusError as e:
         await message.answer(
