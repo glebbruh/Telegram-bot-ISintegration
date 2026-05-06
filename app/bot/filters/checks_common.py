@@ -28,13 +28,13 @@ def build_filters_text(filters: dict) -> str:
     lines = [
         "Выберите фильтры для раздела «Проверки».",
         "",
-        f"- Приступить к выполнению: {filters.get('date_at', {}).get('label', 'не выбрано')}",
-        f"- Период даты завершения (фактического): {filters.get('finished_at', {}).get('label', 'не выбрано')}",
-        f"- Период крайнего срока: {filters.get('deadline_at', {}).get('label', 'не выбрано')}",
-        f"- Статус: {filters.get('status', {}).get('label', 'не выбрано')}",
-        f"- Просрочено: {filters.get('overdue', {}).get('label', 'не выбрано')}",
-        f"- Шаблон чек-листа: {filters.get('pattern', {}).get('name', 'не выбрано')}",
-        f"- Показывать только мои задачи: {show_my_label}",
-        f"- Показывать назначенные мной: {made_by_me_label}",
+        f"• Приступить к выполнению: {filters.get('date_at', {}).get('label', 'не выбрано')}",
+        f"• Период даты завершения (фактического): {filters.get('finished_at', {}).get('label', 'не выбрано')}",
+        f"• Период крайнего срока: {filters.get('deadline_at', {}).get('label', 'не выбрано')}",
+        f"• Статус: {filters.get('status', {}).get('label', 'не выбрано')}",
+        f"• Просрочено: {filters.get('overdue', {}).get('label', 'не выбрано')}",
+        f"• Шаблон чек-листа: {filters.get('pattern', {}).get('name', 'не выбрано')}",
+        f"• Показывать только мои задачи: {show_my_label}",
+        f"• Показывать назначенные мной: {made_by_me_label}",
     ]
     return "\n".join(lines)

@@ -3,7 +3,7 @@ from aiogram import F, Router
 from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery, Message, BufferedInputFile
 
-from bot.constants import CHECK_STATUS_LABELS, CHECK_STATUS_LABELS_LOWER
+from bot.constants import CHECK_STATUS_LABELS, CHECK_STATUS_LABELS_LOWER, CHECK_STATUS_EMOJI
 from bot.filters.checks_common import get_filters, remove_filter, save_filter
 from bot.formatters.checks import build_checks_status_legend, format_checks_response, get_checks_items
 from bot.formatters.summary import format_today_summary
@@ -145,7 +145,7 @@ async def checks_today_summary(callback: CallbackQuery, state: FSMContext):
         return
     await callback.answer()
     await callback.message.answer(
-        format_today_summary(response_data, "проверок", CHECK_STATUS_LABELS_LOWER)
+        format_today_summary(response_data, "проверок", CHECK_STATUS_LABELS_LOWER, CHECK_STATUS_EMOJI)
     )
 
 @router.callback_query(ChecksMenuCb.filter(F.action == "clear_all"))
@@ -179,7 +179,6 @@ async def apply_filters(callback: CallbackQuery, state: FSMContext):
         return
     await callback.answer()
     items = get_checks_items(response_data)
-    await callback.message.answer(build_checks_status_legend())
     if len(items) > 20:
         pdf_bytes = build_checks_pdf_bytes(response_data)
         pdf_file = BufferedInputFile(pdf_bytes, filename="checks_result.pdf")
@@ -188,4 +187,5 @@ async def apply_filters(callback: CallbackQuery, state: FSMContext):
             caption="Найдено больше 20 проверок, отправляю PDF."
         )
         return
+    await callback.message.answer(build_checks_status_legend())
     await callback.message.answer(format_checks_response(response_data))

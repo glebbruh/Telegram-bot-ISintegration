@@ -1,6 +1,5 @@
 import asyncio
 import os
-
 from aiogram import Bot, Dispatcher
 from dotenv import load_dotenv
 from bot.handlers.auth import router as auth_router
@@ -12,6 +11,15 @@ from bot.handlers.session import router as session_router
 from bot.webhook_server import start_internal_webhook_server
 
 load_dotenv()
+
+async def run_forever():
+    while True:
+        try:
+            await main()
+        except KeyboardInterrupt:
+            raise
+        except Exception:
+            await asyncio.sleep(5)
 
 async def main():
     token = os.getenv("BOT_TOKEN", "").strip()
@@ -34,4 +42,4 @@ async def main():
         await runner.cleanup()
 
 if __name__ == "__main__":
-    asyncio.run(main())
+    asyncio.run(run_forever())

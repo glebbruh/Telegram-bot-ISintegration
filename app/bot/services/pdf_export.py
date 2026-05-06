@@ -6,8 +6,8 @@ from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
 from reportlab.pdfgen import canvas
 
-from bot.formatters.checks import build_checks_status_legend_for_pdf, format_checks_response_for_pdf
-from bot.formatters.tasks import format_tasks_response
+from bot.formatters.checks import format_checks_response_for_pdf
+from bot.formatters.tasks import format_tasks_response_for_pdf
 
 FONT_NAME = "NotoSans"
 FONT_NAME_BOLD = "NotoSans-Bold"
@@ -56,15 +56,6 @@ def build_checks_pdf_bytes(response_data: dict) -> bytes:
     pdf.drawString(left_margin, top_y, "Результаты проверок")
     pdf.setFont(FONT_NAME, 11)
     y = top_y - 12 * mm
-    y = _draw_multiline_text(
-        pdf,
-        build_checks_status_legend_for_pdf(),
-        left_margin,
-        y,
-        line_height,
-        bottom_margin,
-    )
-    y -= 5 * mm
     checks_text = format_checks_response_for_pdf(response_data)
     _draw_multiline_text(
         pdf,
@@ -91,7 +82,7 @@ def build_tasks_pdf_bytes(response_data: dict) -> bytes:
     pdf.drawString(left_margin, top_y, "Результаты задач")
     pdf.setFont(FONT_NAME, 11)
     y = top_y - 12 * mm
-    tasks_text = format_tasks_response(response_data)
+    tasks_text = format_tasks_response_for_pdf(response_data)
     _draw_multiline_text(
         pdf,
         tasks_text,

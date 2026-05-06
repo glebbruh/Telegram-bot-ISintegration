@@ -19,6 +19,18 @@ CHECK_STATUS_EMOJI = {
     "created": "⚪",
 }
 
+TASK_STATUS_EMOJI = {
+    "created": "⚪",
+    "process": "☑️",
+    "revise": "🛠️",
+    "review": "🔎",
+    "validation": "⚠️",
+    "completed": "✅",
+    "archived": "📦",
+    "manual_review": "✏️",
+    "cancelled": "❌",
+}
+
 TASK_PRIORITY_LABELS = {
     "low": "Низкий",
     "normal": "Средний",

@@ -2,8 +2,9 @@
 from aiogram import F, Router
 from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery, Message, BufferedInputFile
+import httpx
 
-from bot.constants import TASK_PRIORITY_LABELS, TASK_STATUS_LABELS
+from bot.constants import TASK_PRIORITY_LABELS, TASK_STATUS_LABELS, TASK_STATUS_EMOJI
 from bot.filters.tasks_common import (
     clear_task_filters,
     get_task_filters,
@@ -11,7 +12,7 @@ from bot.filters.tasks_common import (
     save_task_filter,
 )
 from bot.formatters.summary import format_today_summary
-from bot.formatters.tasks import format_tasks_response, get_tasks_items
+from bot.formatters.tasks import format_tasks_response, get_tasks_items, build_tasks_status_legend
 from bot.handlers.bot_calendar import open_range_calendar
 from bot.handlers.common import require_user_id, show_tasks_filters_message, toggle_mutually_exclusive_flag
 from bot.keyboards.callbacks import TaskPriorityChoiceCb, TasksMenuCb
@@ -115,7 +116,7 @@ async def tasks_today_summary(callback: CallbackQuery, state: FSMContext):
         )
         return
     await callback.message.answer(
-        format_today_summary(response_data, "задач", TASK_STATUS_LABELS)
+        format_today_summary(response_data, "задач", TASK_STATUS_LABELS, TASK_STATUS_EMOJI)
     )
 
 @router.callback_query(TasksMenuCb.filter(F.action == "clear_all"))
@@ -137,6 +138,12 @@ async def apply_task_filters(callback: CallbackQuery, state: FSMContext):
             user_id=user_id,
             filters=filters
         )
+    except httpx.TimeoutException:
+        await callback.message.answer("Сервер отвечает слишком долго. Попробуйте ещё раз.")
+        return
+    except httpx.RequestError:
+        await callback.message.answer("Не удалось связаться с сервером.")
+        return
     except Exception as e:
         await callback.answer()
         await callback.message.answer(
@@ -152,4 +159,5 @@ async def apply_task_filters(callback: CallbackQuery, state: FSMContext):
             caption="Найдено больше 20 задач, отправляю PDF."
         )
         return
+    await callback.message.answer(build_tasks_status_legend())
     await callback.message.answer(format_tasks_response(response_data))
