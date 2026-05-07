@@ -5,6 +5,7 @@ from aiogram.types import CallbackQuery, Message, ReplyKeyboardRemove
 from bot.services.auth_help import AuthStates
 from bot.keyboards.callbacks import LogoutConfirmCb
 from bot.keyboards.menu import logout_confirm_keyboard
+from bot.services.connect_with_backend import send_logout_to_backend
 
 router = Router()
 
@@ -26,6 +27,14 @@ async def cancel_logout(callback: CallbackQuery):
 @router.callback_query(LogoutConfirmCb.filter(F.action == "yes"))
 async def confirm_logout(callback: CallbackQuery, state: FSMContext):
     await callback.answer()
+    chat_id = callback.message.chat.id
+    try:
+        await send_logout_to_backend(chat_id)
+    except Exception:
+        await callback.message.answer(
+            "Не удалось выйти из аккаунта на сервере. Попробуйте позже."
+        )
+        return
     await state.clear()
     try:
         await callback.message.delete()
