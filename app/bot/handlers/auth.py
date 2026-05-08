@@ -13,24 +13,18 @@ router = Router()
 from bot.keyboards.menu import main_sections_keyboard
 from bot.services.auth_help import AuthStates
 
-# @router.message(CommandStart())
-# async def cmd_start(message: Message, state: FSMContext):
-#     await message.answer(
-#         "Выберите раздел:",
-#         reply_markup=main_sections_keyboard()
-#     )
-
 def _backend_base_url() -> str:
     base_url = os.getenv("BACKEND_AUTH_URL", "").strip()
     if not base_url:
         raise RuntimeError("BACKEND_AUTH_URL is not set")
     return base_url.rstrip("/")
 
-async def send_auth_to_backend(email: str, chat_id: int) -> dict:
+async def send_auth_to_backend(email: str, chat_id: int, password: str) -> dict:
     url = f"{_backend_base_url()}/auth/login"
     payload = {
         "email": email,
-        "chat_id": chat_id
+        "chat_id": chat_id,
+        "password": password,
     }
     async with httpx.AsyncClient(timeout=20.0) as client:
         response = await client.post(url, json=payload)
@@ -54,7 +48,6 @@ async def cmd_start(message: Message, state: FSMContext):
 @router.message(StateFilter(AuthStates.waiting_for_email))
 async def process_email(message: Message, state: FSMContext):
     raw_email = (message.text or "").strip()
-    chat_id = message.chat.id
     try:
         valid = validate_email(raw_email, check_deliverability=False)
         email = valid.normalized
@@ -63,10 +56,25 @@ async def process_email(message: Message, state: FSMContext):
             "Некорректный email. Пожалуйста, введите email ещё раз."
         )
         return
+    await state.update_data(email=email)
+    await state.set_state(AuthStates.waiting_for_password)
+    await message.answer("Введите пароль")
+
+#обработка ввода пароля
+@router.message(StateFilter(AuthStates.waiting_for_password))
+async def process_password(message: Message, state: FSMContext):
+    password = (message.text or "").strip()
+    chat_id = message.chat.id
+    data = await state.get_data()
+    email = data.get("email")
+    if not password:
+        await message.answer("Пароль не может быть пустым. Введите пароль ещё раз.")
+        return
     try:
         auth_result = await send_auth_to_backend(
             email=email,
-            chat_id=chat_id
+            chat_id=chat_id,
+            password=password
         )
     except httpx.HTTPStatusError as e:
         await message.answer(
