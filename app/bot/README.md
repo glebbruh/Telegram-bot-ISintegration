@@ -46,6 +46,8 @@ JSON, который передает бек после запроса:
 * date_at_to
 * finished_at_from
 * finished_at_to
+* deadline_at_from
+* deadline_at_to
 * status
 * overdue
 * pattern_id

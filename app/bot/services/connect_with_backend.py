@@ -28,6 +28,7 @@ async def fetch_patterns_from_backend(user_id: int) -> list[dict]:
 def build_checks_query_params(user_id: int | None, filters: dict) -> dict:
     date_at = filters.get("date_at", {})
     finished_at = filters.get("finished_at", {})
+    deadline_at = filters.get("deadline_at", {})
     status = filters.get("status", {})
     overdue = filters.get("overdue", {})
     pattern = filters.get("pattern", {})
@@ -39,6 +40,8 @@ def build_checks_query_params(user_id: int | None, filters: dict) -> dict:
         "date_at_to": _as_query_value(date_at.get("to")),
         "finished_at_from": _as_query_value(finished_at.get("from")),
         "finished_at_to": _as_query_value(finished_at.get("to")),
+        "deadline_at_from": _as_query_value(deadline_at.get("from")),
+        "deadline_at_to": _as_query_value(deadline_at.get("to")),
         "status": _as_query_value(status.get("value")),
         "overdue": _as_query_value(overdue.get("value")),
         "pattern_id": _as_query_value(pattern.get("id")),
