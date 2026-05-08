@@ -3,7 +3,7 @@ from aiogram import F, Router
 from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery, Message, BufferedInputFile
 
-from bot.constants import CHECK_STATUS_LABELS, CHECK_STATUS_LABELS_LOWER, CHECK_STATUS_EMOJI
+from bot.constants import CHECK_STATUS_LABELS, CHECK_STATUS_EMOJI
 from bot.filters.checks_common import get_filters, remove_filter, save_filter
 from bot.formatters.checks import build_checks_status_legend, format_checks_response, get_checks_items
 from bot.formatters.summary import format_today_summary
@@ -145,7 +145,7 @@ async def checks_today_summary(callback: CallbackQuery, state: FSMContext):
         return
     await callback.answer()
     await callback.message.answer(
-        format_today_summary(response_data, "проверок", CHECK_STATUS_LABELS_LOWER, CHECK_STATUS_EMOJI)
+        format_today_summary(response_data, "проверок", CHECK_STATUS_LABELS, CHECK_STATUS_EMOJI)
     )
 
 @router.callback_query(ChecksMenuCb.filter(F.action == "clear_all"))
