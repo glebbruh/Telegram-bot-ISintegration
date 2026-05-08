@@ -7,5 +7,5 @@ class LoginRequest(BaseModel):
 
 class LoginResponse(BaseModel):
     success: bool
-    id: int | None = None
+    user_id: int | None = None
 

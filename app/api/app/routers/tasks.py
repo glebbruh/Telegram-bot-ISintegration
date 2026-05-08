@@ -1,5 +1,4 @@
 import datetime
-from typing import Any, Coroutine
 
 from fastapi import APIRouter, HTTPException, status
 
@@ -28,7 +27,7 @@ async def tasks(user_id: int,
                 priority: TaskPriority | None = None,
                 date_period_from: datetime.date | None = None,
                 date_period_to: datetime.date | None = None,
-                show_my: bool = True,
+                show_my: bool = False,
                 made_by_me: bool = False) -> TaskListResponse:
 
     if date_period_from is None:

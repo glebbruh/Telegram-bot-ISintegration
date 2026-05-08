@@ -85,7 +85,7 @@ async def fetch_checks_today_summary(user_id: int | None) -> dict:
     params = {
         "user_id": _as_query_value(user_id),
     }
-    async with httpx.AsyncClient(timeout=60.0) as client:
+    async with httpx.AsyncClient(timeout=15.0) as client:
         response = await client.get(url, params=params)
     if response.status_code != 200:
         raise RuntimeError(f"Checks today summary error: HTTP {response.status_code}")
@@ -97,8 +97,18 @@ async def fetch_tasks_today_summary(user_id: int | None) -> dict:
     params = {
         "user_id": _as_query_value(user_id),
     }
-    async with httpx.AsyncClient(timeout=600.0) as client:
+    async with httpx.AsyncClient(timeout=30.0) as client:
         response = await client.get(url, params=params)
     if response.status_code != 200:
         raise RuntimeError(f"Tasks today summary error: HTTP {response.status_code}")
     return response.json()
+
+async def send_logout_to_backend(chat_id: int) -> None:
+    url = f"{_backend_base_url()}/auth/logout"
+    async with httpx.AsyncClient(timeout=15.0) as client:
+        response = await client.post(
+            url,
+            params={"chat_id": chat_id},
+        )
+    if response.status_code != 200:
+        raise RuntimeError(f"Logout backend error: HTTP {response.status_code}")

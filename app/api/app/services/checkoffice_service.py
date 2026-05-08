@@ -212,26 +212,6 @@ class CheckOfficeService:
 
         return data
 
-    @staticmethod
-    def is_task_assigned_to_user(task: CheckOfficeTask, user_id: int) -> bool:
-        return task.assignee is not None and task.assignee.id == user_id
-
-    @staticmethod
-    def is_task_created_by_user(task: CheckOfficeTask, user_id: int) -> bool:
-        return task.creator is not None and task.creator.id == user_id
-
-    @classmethod
-    def is_task_available_for_user(
-            cls,
-            task: CheckOfficeTask,
-            user_id: int,
-            show_my: bool,
-            made_by_me: bool) -> bool:
-        assigned_to_user = show_my and cls.is_task_assigned_to_user(task, user_id)
-        created_by_user = made_by_me and cls.is_task_created_by_user(task, user_id)
-
-        return assigned_to_user or created_by_user
-
     @classmethod
     async def get_tasks(cls, params: dict) -> list[CheckOfficeTask]:
         page = 1
@@ -265,14 +245,6 @@ class CheckOfficeService:
                 task = cls.extract_task(raw_task)
 
                 if task is None:
-                    continue
-
-                if not cls.is_task_available_for_user(
-                        task=task,
-                        user_id=user_id,
-                        show_my=show_my,
-                        made_by_me=made_by_me,
-                ):
                     continue
 
                 if priority is None:
