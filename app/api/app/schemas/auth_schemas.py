@@ -2,7 +2,7 @@ from pydantic import BaseModel, EmailStr
 
 class LoginRequest(BaseModel):
     email: EmailStr
-    telegram_id: int
+    chat_id: int
 
 
 class LoginResponse(BaseModel):

@@ -25,7 +25,7 @@ class WebhookModel(BaseModel):
     event: WebhookEvent
 
 class WebhookResponse(BaseModel):
-    telegram_id: int
+    chat_id: int
     event_type: WebhookEvent
     name: str
     pattern: str | None = None

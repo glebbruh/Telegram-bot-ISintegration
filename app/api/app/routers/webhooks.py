@@ -35,7 +35,7 @@ async def get_webhook(payload: WebhookModel,
 
     if assignee_chat_id is not None:
         if event == WebhookEvent.task_create or event == WebhookEvent.task_changeStatus:
-            response = WebhookResponse(telegram_id=assignee_chat_id,
+            response = WebhookResponse(chat_id=assignee_chat_id,
                                        event_type=event,
                                        name=data.get('title'),
                                        status=data.get('status'),
@@ -43,7 +43,7 @@ async def get_webhook(payload: WebhookModel,
                                        creator=False)
             background_task.add_task(send_to_bot, response)
         elif event == WebhookEvent.inspection_create or event == WebhookEvent.inspection_changeStatus:
-            response = WebhookResponse(telegram_id=assignee_chat_id,
+            response = WebhookResponse(chat_id=assignee_chat_id,
                                        event_type=event,
                                        name=data.get('place').get('name'),
                                        status=data.get('status'),
@@ -53,7 +53,7 @@ async def get_webhook(payload: WebhookModel,
 
     if creator_chat_id is not None:
         if event == WebhookEvent.task_create or event == WebhookEvent.task_changeStatus:
-            response = WebhookResponse(telegram_id=creator_chat_id,
+            response = WebhookResponse(chat_id=creator_chat_id,
                                        event_type=event,
                                        name=data.get('title'),
                                        status=data.get('status'),
@@ -61,7 +61,7 @@ async def get_webhook(payload: WebhookModel,
                                        creator=True)
             background_task.add_task(send_to_bot, response)
         elif event == WebhookEvent.inspection_create or event == WebhookEvent.inspection_changeStatus:
-            response = WebhookResponse(telegram_id=creator_chat_id,
+            response = WebhookResponse(chat_id=creator_chat_id,
                                        event_type=event,
                                        name=data.get('place').get('name'),
                                        status=data.get('status'),

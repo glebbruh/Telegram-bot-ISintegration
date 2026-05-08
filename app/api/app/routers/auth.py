@@ -22,9 +22,9 @@ async def login(data: LoginRequest) -> LoginResponse:
     if user is None:
         return LoginResponse(success=False)
 
-    await save_link(data.telegram_id, user.id)
+    await save_link(data.chat_id, user.id)
 
-    return LoginResponse(success=True, id=user.id)
+    return LoginResponse(success=True, user_id=user.id)
 
 @router.post("/logout")
 async def logout(chat_id: int):
