@@ -15,10 +15,13 @@ class Settings:
         os.getenv("CHECKOFFICE_PER_PAGE")
     )
 
+
     CHECKOFFICE_USERS_PATH: str = "/publicapi/v1/users"
     CHECKOFFICE_PATTERNS_PATH: str = "/publicapi/v1/patterns"
     CHECKOFFICE_TASKS_PATH: str = "/publicapi/v1/tasks"
     CHECKOFFICE_INSPECTIONS_PATH: str = "/publicapi/v1/inspections"
+
+    BOT_WEBHOOK_URL: str = "http://127.0.0.1:8081/webhook/events"
 
 
 settings = Settings()
