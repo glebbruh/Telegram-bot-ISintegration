@@ -7,15 +7,16 @@ load_dotenv()
 
 DB_URL = os.getenv("DB_URL")
 
-def get_connection():
-    return psycopg.connect(DB_URL)
+async def get_connection():
+    if DB_URL is None:
+        raise Exception("DB_URL is not set")
 
-def get_cursor(connection):
-    return connection.cursor()
+    return await psycopg.AsyncConnection.connect(DB_URL)
+
 
 async def save_link(chat_id: int, user_id: int):
-    async with get_connection() as connection:
-        async with get_cursor(connection) as cursor:
+    async with await get_connection() as connection:
+        async with connection.cursor() as cursor:
             await cursor.execute('''
             INSERT INTO id_links (chat_id, user_id) 
             VALUES (%s, %s)
@@ -24,19 +25,24 @@ async def save_link(chat_id: int, user_id: int):
                                  (chat_id, user_id))
 
 async def delete_link(chat_id: int):
-    async with get_connection() as connection:
-        async with get_cursor(connection) as cursor:
+    async with await get_connection() as connection:
+        async with connection.cursor() as cursor:
             await cursor.execute('''
             DELETE FROM id_links WHERE chat_id = %s;''',
                                  (chat_id,))
 
 async def get_chat_id(user_id: int):
-    async with get_connection() as connection:
-        async with get_cursor(connection) as cursor:
+    async with await get_connection() as connection:
+        async with connection.cursor() as cursor:
             await cursor.execute('''
             SELECT chat_id FROM id_links WHERE user_id = %s;''',
                                  (user_id,))
-            return await cursor.fetchone()
+
+            row = await cursor.fetchone()
+            if row is None:
+                return None
+
+            return row[0]
 
 
 
