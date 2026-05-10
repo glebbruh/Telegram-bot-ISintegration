@@ -17,7 +17,10 @@ async def save_link(chat_id: int, user_id: int):
     async with get_connection() as connection:
         async with get_cursor(connection) as cursor:
             await cursor.execute('''
-            INSERT INTO id_links (chat_id, user_id) VALUES (%s, %s);''',
+            INSERT INTO id_links (chat_id, user_id) 
+            VALUES (%s, %s)
+            ON CONFLICT (chat_id)
+            DO UPDATE SET user_id = EXCLUDED.user_id;''',
                                  (chat_id, user_id))
 
 async def delete_link(chat_id: int):
