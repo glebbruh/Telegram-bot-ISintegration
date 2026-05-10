@@ -3,6 +3,7 @@ from pydantic import BaseModel, EmailStr
 class LoginRequest(BaseModel):
     email: EmailStr
     chat_id: int
+    password: str
 
 
 class LoginResponse(BaseModel):
