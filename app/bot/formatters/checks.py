@@ -23,8 +23,8 @@ def format_checks_response(data: dict) -> str:
         deadline_at = format_date(item.get("deadline_at"))
         line = (
             f"{emoji} {index}. {name} — {pattern_name} — "
-            f"плановое начало ({date_at}) — "
-            f"плановое завершение ({deadline_at})"
+            f"плановое начало: {date_at} — "
+            f"плановое завершение: {deadline_at}"
         )
         lines.append(line)
     return "\n".join(lines)

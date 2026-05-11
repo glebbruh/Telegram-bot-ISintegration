@@ -37,7 +37,6 @@ async def show_filters_message(target: Message | CallbackQuery, state: FSMContex
     filters = await get_filters(state)
     text = build_filters_text(filters)
     markup = checks_filters_keyboard(filters)
-
     if isinstance(target, CallbackQuery):
         await target.message.edit_text(text, reply_markup=markup)
     else:
